@@ -1,4 +1,3 @@
-// Getproduct.jsx
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -8,21 +7,51 @@ import Footer from "./Footer";
 const Getproduct = () => {
   const navigate = useNavigate();
 
-  // States
   const [loading, setLoading] = useState("");
   const [products, setProducts] = useState([]);
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
   const [visibleCount, setVisibleCount] = useState(8);
 
-  // Filter products based on search query
+  const addToCart = (product) => {
+    try {
+      // Get existing cart
+      const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+
+      // Check if product already exists in cart
+      const existingIndex = cart.findIndex(
+        (item) => item.id === product.id
+      );
+
+      if (existingIndex !== -1) {
+        // Product exists, increase quantity
+        cart[existingIndex].qty = (cart[existingIndex].qty || 1) + 1;
+      } else {
+        // Add new product with qty 1
+        cart.push({ ...product, qty: 1 });
+      }
+
+      // Save updated cart
+      localStorage.setItem("cart", JSON.stringify(cart));
+
+      // Dispatch events to update Cart component
+      window.dispatchEvent(new CustomEvent("cartUpdated", { detail: cart }));
+      window.dispatchEvent(new Event("storage"));
+
+      // Show success message
+      alert(`✅ ${product.product_name} added to cart!`);
+    } catch (err) {
+      console.error("Error adding to cart:", err);
+      alert("❌ Failed to add item to cart");
+    }
+  };
+
   const filteredProducts = products.filter(
     (item) =>
       item.product_name.toLowerCase().includes(search.toLowerCase()) ||
       item.product_description.toLowerCase().includes(search.toLowerCase())
   );
 
-  // Fetch products from API
   const getProducts = async () => {
     setLoading("Please wait...");
     setError("");
@@ -42,17 +71,20 @@ const Getproduct = () => {
     getProducts();
   }, []);
 
-  const imagePath = "https://glorykifaru.alwaysdata.net/static/images/";
+  const imagePath =
+    "https://glorykifaru.alwaysdata.net/static/images/";
 
   return (
     <div className="container-fluid">
       <div className="row">
-        {/* Carousel */}
+
         <Carousel />
 
-        <h1 className="text-center my-3">Available Products</h1>
+        <h1 className="text-center my-3">
+          Available Products
+        </h1>
 
-        {/* Search bar */}
+        {/* SEARCH */}
         <div className="row justify-content-center mb-3">
           <input
             className="form-control w-50"
@@ -63,48 +95,88 @@ const Getproduct = () => {
           />
         </div>
 
-        {/* Loading/Error Messages */}
-        {loading && <h2 className="text-warning text-center">{loading}</h2>}
-        {error && <h2 className="text-danger text-center">{error}</h2>}
+        {loading && (
+          <h2 className="text-warning text-center">
+            {loading}
+          </h2>
+        )}
 
-        {/* Product List */}
+        {error && (
+          <h2 className="text-danger text-center">
+            {error}
+          </h2>
+        )}
+
+        {/* PRODUCTS */}
         <div className="row justify-content-center">
-          {filteredProducts.slice(0, visibleCount).map((product) => (
-            <div className="col-md-3 mb-3" key={product.id}>
-              <div className="card shadow h-100 w-100 bg-dark">
-                <img
-                  src={imagePath + product.product_photo}
-                  alt={product.product_name}
-                  style={{ height: "200px", objectFit: "cover" }}
-                  className="card-img-top"
-                />
-                <div className="card-body bg-dark">
-                  <h3 className="text-info">{product.product_name}</h3>
-                  <p className="text-center text-white">
-                    {product.product_description}
-                  </p>
-                  <b className="text-warning">Ksh {product.product_cost}</b>
-                  <br />
-                  <button
-                    className="btn btn-info w-50 mt-2"
-                    onClick={() =>
-                      navigate("/makepayment", { state: { product } })
-                    }
-                  >
-                    Purchase
-                  </button>
+          {filteredProducts
+            .slice(0, visibleCount)
+            .map((product) => (
+              <div
+                className="col-md-3 mb-3"
+                key={product.id}
+              >
+                <div className="card shadow h-100 w-100 bg-dark">
+
+                  <img
+                    src={imagePath + product.product_photo}
+                    alt={product.product_name}
+                    style={{
+                      height: "200px",
+                      objectFit: "cover",
+                    }}
+                    className="card-img-top"
+                  />
+
+                  <div className="card-body bg-dark">
+
+                    <h3 className="text-info">
+                      {product.product_name}
+                    </h3>
+
+                    <p className="text-center text-white">
+                      {product.product_description}
+                    </p>
+
+                    <b className="text-warning">
+                      Ksh {product.product_cost}
+                    </b>
+
+                    <br />
+                    {/* ADD TO CART BUTTON */}
+                    <button
+                      className="btn btn-success w-100 mt-2"
+                      onClick={() => addToCart(product)}
+                    >
+                      🛒 Add to Cart
+                    </button>
+
+                    {/* PURCHASE BUTTON */}
+                    <button
+                      className="btn btn-info w-100 mt-2"
+                      onClick={() =>
+                        navigate("/makepayment", {
+                          state: { product },
+                        })
+                      }
+                    >
+                      💳 Purchase
+                    </button>
+
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
         </div>
 
-        {/* Load More Button */}
+        {/* LOAD MORE */}
         {visibleCount < filteredProducts.length && (
           <div className="text-center my-3">
             <button
               className="btn btn-primary"
-              onClick={() => setVisibleCount(visibleCount + 8)}
+              onClick={() =>
+                setVisibleCount(visibleCount + 8)
+              }
             >
               Load More
             </button>
@@ -112,8 +184,7 @@ const Getproduct = () => {
         )}
       </div>
 
-      {/* Footer */}
-      {/* <Footer /> */}
+      <Footer />
     </div>
   );
 };

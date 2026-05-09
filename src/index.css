@@ -17,3 +17,10 @@ code {
   min-height: 90vh;
   
 }
+.navbar {
+  background-color: grey;
+  text-decoration: none;   /* ❌ "solid" is invalid, this fixes it */
+  padding: 10px 20px;
+  color: darkolivegreen;
+  font-size: x-large;
+}

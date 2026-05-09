@@ -1,8 +1,7 @@
-
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.min.js';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Signup from './components/Signup';
 import Signin from './components/Signin';
 import Addproduct from './components/Addproduct';
@@ -13,44 +12,67 @@ import Navbar from './components/Navbar';
 import Chatbot from './components/Chatbot';
 import Cart from './components/Cart';
 
+
+// AUTH CHECK
+const isAuth = () => {
+  return !!localStorage.getItem("token");
+};
+
+// PROTECTED ROUTE
+const ProtectedRoute = ({ children }) => {
+  if (!isAuth()) {
+    return <Navigate to="/Signin" replace />;
+  }
+  return children;
+};
+
 function App() {
   return (
     <BrowserRouter>
       <div className="App">
 
-        {/* navbar goes here  */}
+        {/* navbar */}
         <Navbar />
+
         <div className="App full-height">
           <header className="App-header">
             <div className='header'>
-              <img src="images/fertilizer4.png" alt=" icon" width="90px" height="90px" />
-              <h1 className='text-center text-white ' >Waste -to- wealth manifestation !</h1>
+              <img src="images/fertilizer4.png" alt="icon" width="90px" height="90px" />
+              <h1 className='text-center text-white'>
+                Waste -to- wealth manifestation !
+              </h1>
             </div>
-
           </header>
-          {/* <nav>  */}
-          {/* <Link to="/Home" className='btn btn- outline bg-danger '>Home</Link>  */}
-          {/* <Link to="/Signup" className='btn btn- outline bg-info '>Signup</Link>  */}
-          {/* <Link to="/Signin" className='btn btn- outline bg-success'>Signin</Link>  */}
-          {/* <Link to="/"  className='btn btn- outline bg-danger'>Getproduct</Link>  */}
-          {/* <Link to="/addproduct"  className='btn btn- outline bg-success '>Addproduct</Link> */}
 
-          {/* </nav>  */}
           <Routes>
+
+            {/* PUBLIC ROUTES */}
             <Route path='/Home' element={<Home />} />
             <Route path='/' element={<Getproduct />} />
             <Route path='/Signup' element={<Signup />} />
             <Route path='/Signin' element={<Signin />} />
-            <Route path='/addproduct' element={<Addproduct />} />
-            <Route path='/Cart' element={<Cart/>}/>
-            <Route path='/makepayment' element={<Makepayment />} />
+            <Route path='/cart' element={<Cart />} />
+<Route path='/makepayment' element={<Makepayment /> } />
+            {/* PROTECTED ROUTES */}
+            <Route path='/addproduct' element={
+              <ProtectedRoute>
+                <Addproduct />
+              </ProtectedRoute>
+            } />
+
            
+
+            <Route path='/makepayment' element={
+              <ProtectedRoute>
+                <Makepayment />
+              </ProtectedRoute>
+            } />
 
           </Routes>
         </div>
       </div>
-      
-      <Chatbot/>
+
+      <Chatbot />
     </BrowserRouter>
   );
 }

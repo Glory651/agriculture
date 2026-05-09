@@ -1,23 +1,23 @@
-import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom"
+
 
 const Navbar = () => {
-  const [user, setUser] = useState(null);
+  const navigate = useNavigate()
 
-  useEffect(() => {
-    const loggeduser = JSON.parse(localStorage.getItem("user"));
-    setUser(loggeduser);
-  }, []);
+  const user = localStorage.getItem("user")
 
-  const logout = () => {
-    localStorage.removeItem("user");
-    setUser(null);
-  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("token")
+    localStorage.removeItem("user")
+    navigate("/signin")
+  }
 
   return (
     <section className="row">
       <div className="col-md-12">
         <nav className="navbar navbar-expand-md bg-light px-4">
+
           <div
             style={{
               display: "flex",
@@ -27,35 +27,51 @@ const Navbar = () => {
               padding: "10px",
             }}
           >
-            {/* Left Side */}
+
+            {/* LEFT SIDE */}
             <div style={{ display: "flex", gap: "20px", alignItems: "center" }}>
               <p style={{ margin: 0 }}>Waste-to-Wealth</p>
-              <Link to="/Home">Home</Link>
-              <Link to="/">Get Products</Link>
-              <Link to="/addproduct">Add Product</Link>
-            </div>
 
-            {/* Right Side */}
-            <div style={{ display: "flex", gap: "15px", alignItems: "center" }}>
-              {user ? (
+              {/* PUBLIC ROUTES */}
+              <Link to="/home">Home</Link>
+
+              {/* PRIVATE ROUTES */}
+              {user && (
                 <>
-                  <span className="nav-link">Welcome {user.username}</span>
-                  <button onClick={logout} className="btn btn-info">
-                    Logout
-                  </button>
-                </>
-              ) : (
-                <>
-                  <Link to="/Signin">Signin</Link>
-                  <Link to="/Signup">Signup</Link>
+                  <Link to="/getproducts">Get Products</Link>
+                  <Link to="/addproduct">Add Product</Link>
+
+
                 </>
               )}
             </div>
+
+            {/* RIGHT SIDE */}
+                <Link to="/cart" className="cart-link-btn">
+              🛒 Cart 
+              </Link>
+            
+            <div style={{ display: "flex", gap: "15px", alignItems: "center" }}>
+
+              {user ? (
+                <button onClick={handleLogout} className="btn btn-info">
+                  Logout
+                </button>
+              ) : (
+                <>
+                  <Link to="/signin">Signin</Link>
+                  <Link to="/signup">Signup</Link>
+                </>
+              )}
+
+            </div>
+
           </div>
+
         </nav>
       </div>
     </section>
-  );
-};
+  )
+}
 
-export default Navbar;
+export default Navbar
